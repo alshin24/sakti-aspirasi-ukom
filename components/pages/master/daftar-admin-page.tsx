@@ -93,9 +93,15 @@ export function DaftarAdminPage() {
             Kembali
           </Button>
 
-          <div>
-            <h2 className="text-2xl font-bold">Daftar Admin</h2>
-            <p className="text-muted-foreground">Kelola dan turunkan admin sistem</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold">Daftar Admin</h2>
+              <p className="text-muted-foreground">Kelola dan turunkan admin sistem</p>
+            </div>
+            <Button onClick={() => router.push("/master/tambah-admin")}>
+              <Shield className="w-4 h-4 mr-2" />
+              Tambah Admin Baru
+            </Button>
           </div>
 
           {error && (

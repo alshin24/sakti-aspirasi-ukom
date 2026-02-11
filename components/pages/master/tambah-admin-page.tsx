@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { AppSidebar } from "@/components/student/app-sidebar"
+import { AppSidebar } from "@/components/master/app-sidebar"
 import { supabase } from "@/lib/supabase/client"
 import {
   Breadcrumb,
@@ -18,29 +18,16 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { AspirasiForm } from "@/components/aspirasi/aspirasi-form"
+import { Button } from "@/components/ui/button"
+import { ArrowLeft } from "lucide-react"
+import { AddAdminForm } from "@/components/admin-management/add-admin-form"
 
-export function KirimAspirasiPage() {
+export function TambahAdminPage() {
   const router = useRouter()
-  const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function init() {
-      // --- MOCK MODE START ---
-      const { IS_MOCK_MODE, MOCK_USER } = await import("@/lib/mock-auth-config")
-      if (IS_MOCK_MODE && localStorage.getItem("mock_session") === "true") {
-        const mockRole = localStorage.getItem("mock_role")
-        if (mockRole !== "murid") {
-          router.push("/login")
-          return
-        }
-        setUserId(MOCK_USER.id)
-        setLoading(false)
-        return
-      }
-      // --- MOCK MODE END ---
-
       const {
         data: { user },
       } = await supabase.auth.getUser()
@@ -49,31 +36,19 @@ export function KirimAspirasiPage() {
         return
       }
 
-      // Check role
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .single()
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-      if (!profile || profile.role !== "murid") {
-        if (profile?.role === "master") {
-          router.push("/master")
-        } else if (profile?.role === "admin") {
-          router.push("/admin")
-        } else {
-          router.push("/login")
-        }
+      if (!profile || profile.role !== "master") {
+        router.push("/login")
         return
       }
 
-      setUserId(user.id)
       setLoading(false)
     }
     init()
   }, [router])
 
-  if (loading || !userId) {
+  if (loading) {
     return <div className="flex items-center justify-center h-screen">Memuat...</div>
   }
 
@@ -88,24 +63,33 @@ export function KirimAspirasiPage() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/murid/dashboard">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/master">Dashboard</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Kirim Aspirasi</BreadcrumbPage>
+                  <BreadcrumbLink href="/master/daftar-admin">Daftar Admin</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Tambah Admin</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
         </header>
 
-        <div className="flex flex-1 flex-col gap-4 p-4 max-w-3xl">
-          <div className="mb-2">
-            <h2 className="text-2xl font-bold">Kirim Aspirasi</h2>
-            <p className="text-muted-foreground">Sampaikan ide atau keluhan Anda untuk kemajuan sekolah</p>
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          <Button variant="ghost" onClick={() => router.push("/master/daftar-admin")} className="w-fit">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Kembali
+          </Button>
+
+          <div>
+            <h2 className="text-2xl font-bold">Tambah Admin Baru</h2>
+            <p className="text-muted-foreground">Buat akun admin baru untuk mengelola sistem aspirasi</p>
           </div>
 
-          <AspirasiForm userId={userId} />
+          <AddAdminForm />
         </div>
       </SidebarInset>
     </SidebarProvider>

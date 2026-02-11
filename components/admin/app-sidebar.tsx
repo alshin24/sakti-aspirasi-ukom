@@ -30,13 +30,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { supabase } from "@/lib/supabase/client"
+import { getProfileById } from "@/lib/supabase/queries"
 
 const data = {
-  user: {
-    name: "Admin",
-    email: "admin@sakti.sch.id",
-    avatar: "/avatars/admin.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
@@ -105,6 +102,31 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [user, setUser] = React.useState({ name: "Admin", email: "admin@sakti.sch.id", avatar: "/avatars/admin.jpg" })
+  const [role, setRole] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    async function fetchUser() {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser()
+        if (authUser) {
+          const profile = await getProfileById(authUser.id)
+          if (profile) {
+            setUser({
+              name: profile.nama || "Admin",
+              email: profile.email,
+              avatar: "/avatars/admin.jpg",
+            })
+            setRole(profile.role)
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error)
+      }
+    }
+    fetchUser()
+  }, [])
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -130,8 +152,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} role={role} />
       </SidebarFooter>
     </Sidebar>
   )
 }
+
+

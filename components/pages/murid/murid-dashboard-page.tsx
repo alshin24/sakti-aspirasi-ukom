@@ -31,6 +31,11 @@ export function MuridDashboardPage() {
       // --- MOCK MODE START ---
       const { IS_MOCK_MODE, MOCK_USER } = await import("@/lib/mock-auth-config")
       if (IS_MOCK_MODE && localStorage.getItem("mock_session") === "true") {
+        const mockRole = localStorage.getItem("mock_role")
+        if (mockRole !== "murid") {
+          router.push("/login")
+          return
+        }
         setUserId(MOCK_USER.id)
         setLoading(false)
         return
@@ -44,6 +49,26 @@ export function MuridDashboardPage() {
         router.push("/login")
         return
       }
+
+      // Check if user has 'murid' role
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+
+      if (!profile || profile.role !== "murid") {
+        // Redirect to appropriate dashboard based on role
+        if (profile?.role === "master") {
+          router.push("/master")
+        } else if (profile?.role === "admin") {
+          router.push("/admin")
+        } else {
+          router.push("/login")
+        }
+        return
+      }
+
       setUserId(user.id)
       setLoading(false)
     }

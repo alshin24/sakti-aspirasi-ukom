@@ -32,11 +32,40 @@ export function AspirasiSayaPage() {
 
   useEffect(() => {
     async function init() {
+      // --- MOCK MODE START ---
+      const { IS_MOCK_MODE, MOCK_USER } = await import("@/lib/mock-auth-config")
+      if (IS_MOCK_MODE && localStorage.getItem("mock_session") === "true") {
+        const mockRole = localStorage.getItem("mock_role")
+        if (mockRole !== "murid") {
+          router.push("/login")
+          return
+        }
+      }
+      // --- MOCK MODE END ---
+
       const {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) {
         router.push("/login")
+        return
+      }
+
+      // Check role
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+
+      if (!profile || profile.role !== "murid") {
+        if (profile?.role === "master") {
+          router.push("/master")
+        } else if (profile?.role === "admin") {
+          router.push("/admin")
+        } else {
+          router.push("/login")
+        }
         return
       }
 

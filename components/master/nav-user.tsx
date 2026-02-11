@@ -29,17 +29,44 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { Badge } from "@/components/ui/badge"
+import { supabase } from "@/lib/supabase/client"
 
 export function NavUser({
   user,
+  role,
 }: {
   user: {
     name: string
     email: string
     avatar: string
   }
+  role?: string | null
 }) {
   const { isMobile } = useSidebar()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    window.location.href = "/login"
+  }
+
+  // Determine badge color and label based on role
+  const getRoleBadge = () => {
+    if (!role) return null // Show nothing while loading
+    
+    switch (role.toLowerCase()) {
+      case "master":
+        return { label: "Master", color: "bg-purple-600" }
+      case "admin":
+        return { label: "Admin", color: "bg-blue-600" }
+      case "murid":
+        return { label: "Murid", color: "bg-green-600" }
+      default:
+        return { label: role, color: "secondary" }
+    }
+  }
+
+  const roleBadge = getRoleBadge()
 
   return (
     <SidebarMenu>
@@ -52,10 +79,22 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg">
+                  {role === "master" ? "MA" : role === "admin" ? "AD" : "US"}
+                </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
+                <div className="flex items-center gap-1">
+                  <span className="truncate font-medium">{user.name}</span>
+                  {roleBadge && (
+                    <Badge 
+                      variant={roleBadge.color === "secondary" ? "secondary" : "default"} 
+                      className={`text-[10px] px-1 py-0 h-4 ${roleBadge.color !== "secondary" ? roleBadge.color : ""}`}
+                    >
+                      {roleBadge.label}
+                    </Badge>
+                  )}
+                </div>
                 <span className="truncate text-xs">{user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -71,10 +110,22 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg">
+                    {role === "master" ? "MA" : role === "admin" ? "AD" : "US"}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="truncate font-medium">{user.name}</span>
+                    {roleBadge && (
+                      <Badge 
+                        variant={roleBadge.color === "secondary" ? "secondary" : "default"} 
+                        className={`text-[10px] px-1 py-0 h-4 ${roleBadge.color !== "secondary" ? roleBadge.color : ""}`}
+                      >
+                        {roleBadge.label}
+                      </Badge>
+                    )}
+                  </div>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
               </div>
@@ -82,29 +133,18 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
                 <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
+                Akun
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell />
-                Notifications
+                Notifikasi
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
-              Log out
+              Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -112,3 +152,4 @@ export function NavUser({
     </SidebarMenu>
   )
 }
+

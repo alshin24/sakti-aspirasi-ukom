@@ -637,3 +637,56 @@ export async function addFeedback(feedback: {
     if (error) throw error
     return data as Feedback
 }
+
+// ============================================
+// ADMIN ACCOUNT CREATION
+// ============================================
+
+export async function createAdminAccount(adminData: {
+    email: string
+    password: string
+    nama: string
+}) {
+    // --- MOCK MODE START ---
+    const { IS_MOCK_MODE } = await import("../mock-auth-config")
+    if (IS_MOCK_MODE) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        return {
+            id: `mock-admin-${Date.now()}`,
+            email: adminData.email,
+            role: "admin",
+            nama: adminData.nama,
+            created_at: new Date().toISOString()
+        } as Profile
+    }
+    // --- MOCK MODE END ---
+
+    // Create auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: adminData.email,
+        password: adminData.password,
+        options: {
+            data: {
+                nama: adminData.nama,
+            },
+        },
+    })
+
+    if (authError || !authData.user) {
+        throw new Error(authError?.message || "Gagal membuat akun admin")
+    }
+
+    // Update profile role to admin
+    const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .update({ role: "admin" })
+        .eq("id", authData.user.id)
+        .select()
+        .single()
+
+    if (profileError) {
+        throw new Error("Gagal mengupdate role admin")
+    }
+
+    return profileData as Profile
+}
