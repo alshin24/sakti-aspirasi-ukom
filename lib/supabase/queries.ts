@@ -390,3 +390,53 @@ export async function createAdminAccount(adminData: {
 
     return profileData as Profile
 }
+
+// ============================================
+// STATISTICS QUERIES
+// ============================================
+
+export async function getDailyStats() {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayISO = today.toISOString()
+
+    // 1. Total Aspirasi Masuk Hari Ini
+    const { count: aspirasiCreatedToday, error: errCreated } = await supabase
+        .from("aspirasi")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", todayISO)
+
+    if (errCreated) throw errCreated
+
+    // 2. Aspirasi Diselesaikan Hari Ini (Approved or Rejected)
+    const { count: aspirasiResolvedToday, error: errResolved } = await supabase
+        .from("aspirasi")
+        .select("*", { count: "exact", head: true })
+        .in("status", ["approved", "rejected"])
+        .gte("updated_at", todayISO)
+
+    if (errResolved) throw errResolved
+
+    // 3. Menunggu Verifikasi (Total Pending currently)
+    const { count: aspirasiPending, error: errPending } = await supabase
+        .from("aspirasi")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending")
+
+    if (errPending) throw errPending
+
+    // 4. Pengguna Baru Hari Ini
+    const { count: usersCreatedToday, error: errUsers } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", todayISO)
+
+    if (errUsers) throw errUsers
+
+    return {
+        aspirasiCreatedToday: aspirasiCreatedToday || 0,
+        aspirasiResolvedToday: aspirasiResolvedToday || 0,
+        aspirasiPending: aspirasiPending || 0,
+        usersCreatedToday: usersCreatedToday || 0
+    }
+}
