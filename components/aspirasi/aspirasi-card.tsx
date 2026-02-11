@@ -15,7 +15,7 @@ export function AspirasiCard({ aspirasi, onViewDetail, showSubmitter = false }: 
   return (
     <Card className="hover:border-primary/50 transition-colors">
       <CardHeader>
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col-reverse gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg">{aspirasi.title}</CardTitle>
             <CardDescription className="flex flex-col gap-1 mt-1">
@@ -25,7 +25,7 @@ export function AspirasiCard({ aspirasi, onViewDetail, showSubmitter = false }: 
                   {aspirasi.submitter.nis && <span className="text-xs"> (NIS: {aspirasi.submitter.nis})</span>}
                 </span>
               )}
-              <span className="flex items-center gap-2">
+              <span className="flex items-center gap-2 flex-wrap">
                 <span>
                   {new Date(aspirasi.created_at).toLocaleDateString("id-ID", {
                     day: "numeric",
@@ -35,7 +35,7 @@ export function AspirasiCard({ aspirasi, onViewDetail, showSubmitter = false }: 
                 </span>
                 {aspirasi.location && (
                   <>
-                    <span>•</span>
+                    <span className="hidden sm:inline">•</span>
                     <span className="flex items-center gap-1">
                       <MapPin className="w-3 h-3" />
                       {aspirasi.location}
@@ -45,7 +45,7 @@ export function AspirasiCard({ aspirasi, onViewDetail, showSubmitter = false }: 
               </span>
             </CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 sm:justify-end">
             <AspirasiCategoryBadge category={aspirasi.category} />
             <AspirasiStatusBadge status={aspirasi.status} />
           </div>

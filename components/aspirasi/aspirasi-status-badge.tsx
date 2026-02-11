@@ -10,24 +10,24 @@ export function AspirasiStatusBadge({ status }: AspirasiStatusBadgeProps) {
   switch (status) {
     case "pending":
       return (
-        <Badge variant="outline" className="border-yellow-300 text-yellow-700">
-          <Clock className="w-3 h-3 mr-1" />
+        <div className="inline-flex items-center rounded-full border-2 border-black bg-yellow-300 px-3 py-1 text-xs font-bold text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+          <Clock className="w-3.5 h-3.5 mr-1.5" />
           Pending
-        </Badge>
+        </div>
       )
     case "approved":
       return (
-        <Badge variant="outline" className="border-green-300 text-green-700">
-          <CheckCircle className="w-3 h-3 mr-1" />
+        <div className="inline-flex items-center rounded-full border-2 border-black bg-green-400 px-3 py-1 text-xs font-bold text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+          <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
           Disetujui
-        </Badge>
+        </div>
       )
     case "rejected":
       return (
-        <Badge variant="outline" className="border-red-300 text-red-700">
-          <XCircle className="w-3 h-3 mr-1" />
+        <div className="inline-flex items-center rounded-full border-2 border-black bg-red-400 px-3 py-1 text-xs font-bold text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
+          <XCircle className="w-3.5 h-3.5 mr-1.5" />
           Ditolak
-        </Badge>
+        </div>
       )
     default:
       return <Badge>{status}</Badge>

@@ -29,32 +29,6 @@ export function LoginForm({
     setLoading(true)
 
     try {
-      // --- MOCK MODE START ---
-      const { IS_MOCK_MODE, MOCK_USER, MOCK_ADMIN } = await import("@/lib/mock-auth-config")
-      if (IS_MOCK_MODE) {
-        // Simulasi delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Simple mock login logic
-        let role = "murid"
-        if (email.includes("admin")) role = "admin"
-        if (email.includes("master")) role = "master"
-
-        // Simpan fake session di localStorage (untuk middleware/client checks)
-        // Note: Ini sangat tidak aman untuk production, tapi OK untuk testing lokal "yang penting jalan"
-        localStorage.setItem("mock_session", "true")
-        localStorage.setItem("mock_role", role)
-
-        alert(`[MOCK MODE] Login Berhasil sebagai ${role}!`)
-        
-        if (role === "master") router.push("/master")
-        else if (role === "admin") router.push("/admin")
-        else router.push("/murid")
-        return
-      }
-      // --- MOCK MODE END ---
-
-      // 1. Sign in with Supabase Auth
       const { error: authError, data } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -70,14 +44,12 @@ export function LoginForm({
         throw new Error(authError?.message || "Login gagal")
       }
 
-      // 2. Fetch profile to get role
       const profile = await getProfileById(data.user.id)
 
       if (!profile) {
         throw new Error("Profile tidak ditemukan")
       }
 
-      // 3. Redirect based on role
       if (profile.role === "master") {
         router.push("/master")
       } else if (profile.role === "admin") {

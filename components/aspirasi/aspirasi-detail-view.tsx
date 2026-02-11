@@ -15,7 +15,7 @@ export function AspirasiDetailView({ aspirasi, showSubmitter = false }: Aspirasi
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex gap-2 mb-2">
+            <div className="flex flex-wrap gap-2 mb-2">
               <AspirasiCategoryBadge category={aspirasi.category} />
               <AspirasiStatusBadge status={aspirasi.status} />
             </div>

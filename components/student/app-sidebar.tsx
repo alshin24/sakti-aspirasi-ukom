@@ -91,27 +91,23 @@ const data = {
   navSecondary: [
     {
       title: "Panduan",
-      url: "/murid/help",
+      url: "/murid/panduan",
       icon: BookOpen,
     },
     {
       title: "Pengaturan",
-      url: "/murid/settings",
+      url: "/murid/pengaturan",
       icon: Settings,
     },
   ],
   projects: [
     {
-      title: "Disetujui", // Changed form name to title to match interface if needed, or keep name
+      title: "Disetujui", 
       name: "Disetujui",
-      url: "/murid/aspirasi-saya", // Redirect to list for now
+      url: "/murid/aspirasi-saya",
       icon: CheckCircle2,
     },
-    {
-        name: "Bantuan",
-        url: "/murid/help",
-        icon: LifeBuoy,
-    }
+
   ],
 }
 

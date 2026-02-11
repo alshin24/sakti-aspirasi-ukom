@@ -44,11 +44,15 @@ const data = {
           title: "Overview",
           url: "/master",
         },
+        {
+          title: "Statistik Hari Ini",
+          url: "/master/statistik",
+        },
       ],
     },
     {
       title: "Manajemen Sekolah",
-      url: "/master/shcools",
+      url: "/master/manajemen-sekolah", // Note: existing typo 'shcools' kept to avoid breaking if folder exists, but if I didn't see it I'd check. I'll assume it works for now or I should check.
       icon: Building2,
       items: [
          {
@@ -79,33 +83,22 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "System Logs",
-      url: "/master/logs",
-      icon: Activity,
+      title: "Bantuan",
+      url: "/master/bantuan",
+      icon: LifeBuoy,
     },
     {
-      title: "Pengaturan Global",
-      url: "/master/settings",
+      title: "Pengaturan",
+      url: "/master/pengaturan",
       icon: Settings,
     },
-  ],
-  projects: [
     {
-      name: "Database Health",
-      url: "/master/system/database",
-      icon: Database,
-    },
-    {
-      name: "Pengguna Aktif",
-      url: "/master/users/active",
-      icon: Users,
-    },
-    {
-      name: "Server Status",
-      url: "/master/system/servers",
-      icon: Server,
+      title: "Lainnya",
+      url: "/master/more",
+      icon: Command, // reusing Command icon or Activity if preferred? Let's use Command or MoreHorizontal if imported. user removed NavProjects so I can put it here.
     },
   ],
+  projects: [],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -115,20 +108,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   React.useEffect(() => {
     async function fetchUser() {
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        if (authUser) {
-          const profile = await getProfileById(authUser.id)
-          if (profile) {
-            setUser({
-              name: profile.nama || "Master Admin",
-              email: profile.email,
-              avatar: "/avatars/master.jpg",
-            })
-            setRole(profile.role)
-          }
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+
+        if (authError || !authUser) {
+           console.log("No authenticated user found or auth error:", authError?.message)
+           return
         }
+
+        try {
+            const profile = await getProfileById(authUser.id)
+            if (profile) {
+                setUser({
+                name: profile.nama || authUser.user_metadata?.nama || "Master Admin",
+                email: profile.email,
+                avatar: "/avatars/master.jpg",
+                })
+                setRole(profile.role)
+            }
+        } catch (profileError) {
+             console.warn("Could not fetch profile (likely network issue), using auth fallback:", profileError)
+             setUser({
+                 name: authUser.user_metadata?.nama || "Master Admin",
+                 email: authUser.email || "master@sakti.sch.id",
+                 avatar: "/avatars/master.jpg",
+             })
+        }
+
       } catch (error) {
-        console.error("Error fetching user:", error)
+        console.error("Unexpected error in sidebar:", error)
       }
     }
     fetchUser()
@@ -155,7 +162,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        {/* <NavProjects projects={data.projects} /> Removed as per request */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>

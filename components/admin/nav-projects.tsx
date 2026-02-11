@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+
 import {
   Folder,
   MoreHorizontal,
@@ -78,9 +80,11 @@ export function NavProjects({
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>
-          <SidebarMenuButton>
-            <MoreHorizontal />
-            <span>More</span>
+          <SidebarMenuButton asChild>
+            <Link href="/admin/more">
+              <MoreHorizontal />
+              <span>More</span>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>

@@ -45,6 +45,10 @@ const data = {
           title: "Overview",
           url: "/admin",
         },
+        {
+          title: "Statistik Hari Ini",
+          url: "/admin/statistik",
+        },
       ],
     },
     {
@@ -71,34 +75,19 @@ const data = {
     },
   ],
   navSecondary: [
-    {
-      title: "Bantuan",
-      url: "/admin/help",
-      icon: LifeBuoy,
-    },
+
     {
       title: "Pengaturan",
-      url: "/admin/settings",
+      url: "/admin/pengaturan",
       icon: Settings,
     },
-  ],
-  projects: [
     {
-      name: "Statistik Hari Ini",
-      url: "/admin/stats/today",
-      icon: TrendingUp,
-    },
-    {
-      name: "Aktivitas Terkini",
-      url: "/admin/activity",
-      icon: Clock,
-    },
-    {
-      name: "Keamanan Sistem",
-      url: "/admin/security",
-      icon: Shield,
+      title: "Lainnya",
+      url: "/admin/more",
+      icon: Command, 
     },
   ],
+  projects: [], 
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -108,20 +97,38 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   React.useEffect(() => {
     async function fetchUser() {
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        if (authUser) {
-          const profile = await getProfileById(authUser.id)
-          if (profile) {
-            setUser({
-              name: profile.nama || "Admin",
-              email: profile.email,
-              avatar: "/avatars/admin.jpg",
-            })
-            setRole(profile.role)
-          }
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
+        
+        if (authError || !authUser) {
+           console.log("No authenticated user found or auth error:", authError?.message)
+           return
         }
+
+        try {
+            const profile = await getProfileById(authUser.id)
+            if (profile) {
+                setUser({
+                name: profile.nama || authUser.user_metadata?.nama || "Admin",
+                email: profile.email,
+                avatar: "/avatars/admin.jpg",
+                })
+                setRole(profile.role)
+            }
+        } catch (profileError) {
+            console.warn("Could not fetch profile (likely network issue), using auth fallback:", profileError)
+            // Fallback to auth metadata if profile fetch fails
+            setUser({
+                name: authUser.user_metadata?.nama || "Admin",
+                email: authUser.email || "admin@sakti.sch.id",
+                avatar: "/avatars/admin.jpg",
+            })
+            // We can try to infer role or leave it null/default
+            // For admin panel, maybe unsafe to assume role without checking DB, 
+            // but for UI display it's better than crashing.
+        }
+
       } catch (error) {
-        console.error("Error fetching user:", error)
+        console.error("Unexpected error in sidebar:", error)
       }
     }
     fetchUser()

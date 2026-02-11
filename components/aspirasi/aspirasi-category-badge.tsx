@@ -6,16 +6,20 @@ interface AspirasiCategoryBadgeProps {
 }
 
 export function AspirasiCategoryBadge({ category }: AspirasiCategoryBadgeProps) {
-  const colors: Record<AspirasiCategory, string> = {
-    fasilitas: "border-blue-300 text-blue-700",
-    akademik: "border-purple-300 text-purple-700",
-    ekstrakurikuler: "border-green-300 text-green-700",
-    lainnya: "border-gray-300 text-gray-700",
+  const styles: Record<AspirasiCategory, string> = {
+    fasilitas: "bg-blue-300",
+    akademik: "bg-purple-300",
+    ekstrakurikuler: "bg-emerald-300",
+    lainnya: "bg-gray-200",
   }
 
   return (
-    <Badge variant="outline" className={colors[category]}>
+    <div
+      className={`inline-flex items-center rounded-lg border-2 border-black px-2.5 py-0.5 text-xs font-bold text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase tracking-wider ${
+        styles[category] || "bg-gray-200"
+      }`}
+    >
       {category}
-    </Badge>
+    </div>
   )
 }

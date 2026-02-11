@@ -1,0 +1,126 @@
+"use client"
+
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
+import { Globe, Lock, Mail, Server } from "lucide-react"
+
+export default function PengaturanAdminPage() {
+  return (
+    <div className="container mx-auto max-w-4xl py-8 space-y-8">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">Pengaturan Global</h1>
+        <p className="text-muted-foreground">
+          Konfigurasi sistem dan preferensi admin.
+        </p>
+      </div>
+
+      <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Globe className="h-5 w-5 text-primary" />
+              <CardTitle>Identitas Sekolah</CardTitle>
+            </div>
+            <CardDescription>
+              Informasi dasar yang tampil di aplikasi.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="school-name">Nama Sekolah</Label>
+                <Input id="school-name" defaultValue="SMK SAKTI Gemolong" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="school-email">Email Resmi</Label>
+                <Input id="school-email" defaultValue="info@sakti.sch.id" />
+              </div>
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="address">Alamat</Label>
+                <Input id="address" defaultValue="Jl. Raya Sukowati No. 123, Sragen" />
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button>Simpan Perubahan</Button>
+          </CardFooter>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Server className="h-5 w-5 text-primary" />
+              <CardTitle>Sistem</CardTitle>
+            </div>
+            <CardDescription>
+              Pengaturan operasional sistem.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between space-x-2">
+              <Label htmlFor="maintenance" className="flex flex-col space-y-1">
+                <span>Mode Pemeliharaan (Maintenance)</span>
+                <span className="font-normal text-muted-foreground">
+                  Jika aktif, hanya admin yang bisa mengakses aplikasi.
+                </span>
+              </Label>
+              <Switch id="maintenance" />
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between space-x-2">
+              <Label htmlFor="registration" className="flex flex-col space-y-1">
+                <span>Pendaftaran Murid Baru</span>
+                <span className="font-normal text-muted-foreground">
+                  Izinkan murid untuk mendaftar/login secara mandiri.
+                </span>
+              </Label>
+              <Switch id="registration" defaultChecked />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Lock className="h-5 w-5 text-primary" />
+              <CardTitle>Keamanan Admin</CardTitle>
+            </div>
+            <CardDescription>
+              Ubah kata sandi akun master admin.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-pass">Kata Sandi Lama</Label>
+              <Input id="current-pass" type="password" />
+            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-pass">Kata Sandi Baru</Label>
+                <Input id="new-pass" type="password" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-pass">Konfirmasi Kata Sandi</Label>
+                <Input id="confirm-pass" type="password" />
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline">Update Keamanan</Button>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
+  )
+}

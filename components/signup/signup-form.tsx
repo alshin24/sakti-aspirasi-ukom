@@ -46,22 +46,6 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
     setLoading(true)
 
     try {
-      // --- MOCK MODE START ---
-      const { IS_MOCK_MODE } = await import("@/lib/mock-auth-config")
-      if (IS_MOCK_MODE) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        localStorage.setItem("mock_session", "true")
-        localStorage.setItem("mock_role", "murid")
-        
-        alert("[MOCK MODE] Akun berhasil dibuat! Mengalihkan ke dashboard...")
-        router.push("/murid")
-        return
-      }
-      // --- MOCK MODE END ---
-
-      // 1. Create auth user with metadata
-      // This will trigger handle_new_user to create the profile with this data
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -81,11 +65,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
         throw new Error(authError?.message || "Gagal membuat akun")
       }
 
-      // 2. Profile creation is handled by the database trigger
-
       if (authData.session) {
-        // Jika email confirmation disabled (via SQL script), user langsung login!
-        // Langsung redirect ke dashboard, SKIP login manual.
         alert("Akun berhasil dibuat! Mengalihkan ke dashboard...")
         router.push("/murid")
         return
