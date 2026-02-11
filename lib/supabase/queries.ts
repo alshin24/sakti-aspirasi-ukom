@@ -440,3 +440,69 @@ export async function getDailyStats() {
         usersCreatedToday: usersCreatedToday || 0
     }
 }
+
+export async function getWeeklyActivityStats(days = 7) {
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - days + 1) // +1 to include today and go back 6 days
+    startDate.setHours(0, 0, 0, 0)
+    const startDateISO = startDate.toISOString()
+
+    // Incoming
+    const { data: incomingData, error: incomingError } = await supabase
+        .from("aspirasi")
+        .select("created_at")
+        .gte("created_at", startDateISO)
+
+    if (incomingError) throw incomingError
+
+    // Resolved (approved or rejected)
+    const { data: resolvedData, error: resolvedError } = await supabase
+        .from("aspirasi")
+        .select("updated_at")
+        .in("status", ["approved", "rejected"])
+        .gte("updated_at", startDateISO)
+
+    if (resolvedError) throw resolvedError
+
+    // Group by date
+    const statsMap = new Map<string, { incoming: number; resolved: number }>()
+
+    // Initialize all days
+    for (let i = 0; i < days; i++) {
+        const d = new Date(startDate)
+        d.setDate(d.getDate() + i)
+        const dateKey = d.toISOString().split('T')[0]
+        statsMap.set(dateKey, { incoming: 0, resolved: 0 })
+    }
+
+    incomingData.forEach(item => {
+        const dateKey = new Date(item.created_at).toISOString().split('T')[0]
+        if (statsMap.has(dateKey)) {
+            const current = statsMap.get(dateKey)!
+            current.incoming += 1
+        }
+    })
+
+    resolvedData.forEach(item => {
+        const dateKey = new Date(item.updated_at).toISOString().split('T')[0]
+        if (statsMap.has(dateKey)) {
+            const current = statsMap.get(dateKey)!
+            current.resolved += 1
+        }
+    })
+
+    // Convert to array and format for Chart
+    // Chart expects: { name: "Senin", aspirasi: 4, selesai: 2 }
+    const result = Array.from(statsMap.entries()).map(([dateStr, counts]) => {
+        const date = new Date(dateStr)
+        const name = date.toLocaleDateString("id-ID", { weekday: 'long' })
+        return {
+            name,
+            originalDate: dateStr, // keep for debugging or sorting if needed
+            aspirasi: counts.incoming,
+            selesai: counts.resolved
+        }
+    })
+
+    return result
+}
