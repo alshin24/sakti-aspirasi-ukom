@@ -87,16 +87,16 @@ const data = {
       url: "/master/bantuan",
       icon: LifeBuoy,
     },
-    {
-      title: "Pengaturan",
-      url: "/master/pengaturan",
-      icon: Settings,
-    },
-    {
-      title: "Lainnya",
-      url: "/master/more",
-      icon: Command, // reusing Command icon or Activity if preferred? Let's use Command or MoreHorizontal if imported. user removed NavProjects so I can put it here.
-    },
+    // {
+    //   title: "Pengaturan",
+    //   url: "/master/pengaturan",
+    //   icon: Settings,
+    // },
+    // {
+    //   title: "Lainnya",
+    //   url: "/master/more",
+    //   icon: Command, 
+    // },
   ],
   projects: [],
 }

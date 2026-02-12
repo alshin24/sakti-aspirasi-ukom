@@ -79,12 +79,12 @@ export function NavProjects({
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
+          {/* <SidebarMenuButton asChild>
             <Link href="/murid/more">
               <MoreHorizontal />
               <span>Lainnya</span>
             </Link>
-          </SidebarMenuButton>
+          </SidebarMenuButton> */}
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>

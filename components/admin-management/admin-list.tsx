@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Shield, ArrowDown } from "lucide-react"
 import { supabase } from "@/lib/supabase/client"
-import { demoteToMurid } from "@/lib/supabase/queries"
 import type { Profile } from "@/lib/supabase/queries"
+import { DemoteAdminDialog } from "@/components/master/demote-admin-dialog"
 
 interface AdminListProps {
   onUpdate: () => void
@@ -18,6 +18,8 @@ interface AdminListProps {
 export function AdminList({ onUpdate, onSuccess, onError }: AdminListProps) {
   const [loading, setLoading] = useState(true)
   const [admins, setAdmins] = useState<Profile[]>([])
+  const [demoteDialogOpen, setDemoteDialogOpen] = useState(false)
+  const [selectedAdmin, setSelectedAdmin] = useState<Profile | null>(null)
 
   useEffect(() => {
     loadData()
@@ -34,15 +36,15 @@ export function AdminList({ onUpdate, onSuccess, onError }: AdminListProps) {
     setLoading(false)
   }
 
-  async function handleDemote(userId: string) {
-    try {
-      await demoteToMurid(userId)
-      await loadData()
-      onUpdate()
-      onSuccess("Admin berhasil diturunkan menjadi murid")
-    } catch (err: any) {
-      onError(err.message || "Gagal menurunkan admin")
-    }
+  function handleDemoteClick(admin: Profile) {
+    setSelectedAdmin(admin)
+    setDemoteDialogOpen(true)
+  }
+
+  function handleSuccess() {
+    loadData()
+    onUpdate()
+    onSuccess("Admin berhasil diturunkan menjadi murid")
   }
 
   if (loading) {
@@ -63,28 +65,37 @@ export function AdminList({ onUpdate, onSuccess, onError }: AdminListProps) {
   }
 
   return (
-    <div className="space-y-3">
-      {admins.map((admin) => (
-        <div key={admin.id} className="flex items-center justify-between p-4 border rounded-lg">
-          <div className="flex-1">
-            <h4 className="font-medium">{admin.nama || admin.email}</h4>
-            <p className="text-sm text-muted-foreground">
-              {admin.email}
-              {admin.nis && <span> • NIS: {admin.nis}</span>}
-              {admin.kelas && <span> • Kelas: {admin.kelas}</span>}
-            </p>
+    <>
+      <div className="space-y-3">
+        {admins.map((admin) => (
+          <div key={admin.id} className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex-1">
+              <h4 className="font-medium">{admin.nama || admin.email}</h4>
+              <p className="text-sm text-muted-foreground">
+                {admin.email}
+                {admin.nis && <span> • NIS: {admin.nis}</span>}
+                {admin.kelas && <span> • Kelas: {admin.kelas}</span>}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge variant={admin.role === "master" ? "default" : "outline"}>{admin.role}</Badge>
+              {admin.role === "admin" && (
+                <Button variant="outline" size="sm" onClick={() => handleDemoteClick(admin)}>
+                  <ArrowDown className="w-4 h-4 mr-1" />
+                  Turunkan
+                </Button>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Badge variant={admin.role === "master" ? "default" : "outline"}>{admin.role}</Badge>
-            {admin.role === "admin" && (
-              <Button variant="outline" size="sm" onClick={() => handleDemote(admin.id)}>
-                <ArrowDown className="w-4 h-4 mr-1" />
-                Turunkan
-              </Button>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      <DemoteAdminDialog
+        open={demoteDialogOpen}
+        onOpenChange={setDemoteDialogOpen}
+        admin={selectedAdmin}
+        onSuccess={handleSuccess}
+      />
+    </>
   )
 }

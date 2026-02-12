@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
 import {
   Card,
@@ -6,10 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { ArrowLeft, Database, FileUp, History, Users } from "lucide-react"
+import { ArrowLeft, FileUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ExportDialog } from "@/components/admin/export-dialog"
 
 export default function MoreAdminPage() {
+  const [exportDialogOpen, setExportDialogOpen] = useState(false)
+
   return (
     <div className="container mx-auto max-w-4xl py-8 space-y-8">
       <div className="flex items-center justify-between">
@@ -27,7 +33,10 @@ export default function MoreAdminPage() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+        <Card 
+          className="hover:bg-muted/50 transition-colors cursor-pointer"
+          onClick={() => setExportDialogOpen(true)}
+        >
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileUp className="h-5 w-5 text-primary" />
@@ -41,22 +50,9 @@ export default function MoreAdminPage() {
             <Button variant="secondary" className="w-full">Unduh Sekarang</Button>
           </CardContent>
         </Card>
-
-        <Card className="opacity-50">
-           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <History className="h-5 w-5" />
-              Audit Log
-            </CardTitle>
-            <CardDescription>
-              Fitur ini akan segera hadir.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Button variant="ghost" disabled className="w-full">Coming Soon</Button>
-          </CardContent>
-        </Card>
       </div>
+
+      <ExportDialog open={exportDialogOpen} onOpenChange={setExportDialogOpen} />
     </div>
   )
 }

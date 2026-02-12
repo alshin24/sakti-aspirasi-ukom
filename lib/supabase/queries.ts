@@ -25,6 +25,7 @@ export interface Aspirasi {
     title: string
     content: string
     location: string | null
+    image_url: string | null
     status: AspirasiStatus
     created_at: string
     updated_at: string
@@ -296,6 +297,7 @@ export async function submitAspirasi(aspirasi: {
     title: string
     content: string
     location?: string
+    image_url?: string
 }) {
     const { data, error } = await supabase
         .from("aspirasi")
@@ -441,6 +443,153 @@ export async function getDailyStats() {
     }
 }
 
+// ============================================
+// IMAGE UPLOAD UTILITIES
+// ============================================
+
+export async function uploadAspirasiImage(file: File): Promise<string> {
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
+    const filePath = `aspirasi-images/${fileName}`
+
+    const { data, error } = await supabase.storage
+        .from('aspirasi-images')
+        .upload(filePath, file)
+
+    if (error) throw error
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+        .from('aspirasi-images')
+        .getPublicUrl(filePath)
+
+    return urlData.publicUrl
+}
+
+export async function deleteAspirasiImage(imageUrl: string) {
+    // Extract file path from URL
+    const urlParts = imageUrl.split('/aspirasi-images/')
+    if (urlParts.length < 2) return
+
+    const filePath = `aspirasi-images/${urlParts[1]}`
+
+    const { error } = await supabase.storage
+        .from('aspirasi-images')
+        .remove([filePath])
+
+    if (error) throw error
+}
+
+// ============================================
+// NOTIFICATIONS QUERIES
+// ============================================
+
+export interface Notification {
+    id: string
+    user_id: string
+    title: string
+    message: string
+    type: string
+    read: boolean
+    created_at: string
+}
+
+export async function getNotifications(userId: string) {
+    const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+
+    if (error) throw error
+    return data as Notification[]
+}
+
+export async function getUnreadNotificationsCount(userId: string) {
+    const { count, error } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("read", false)
+
+    if (error) throw error
+    return count || 0
+}
+
+export async function markNotificationRead(notificationId: string) {
+    const { data, error } = await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("id", notificationId)
+        .select()
+        .single()
+
+    if (error) throw error
+    return data as Notification
+}
+
+export async function createNotification(notification: {
+    user_id: string
+    title: string
+    message: string
+    type: string
+}) {
+    const { data, error } = await supabase
+        .from("notifications")
+        .insert(notification)
+        .select()
+        .single()
+
+    if (error) throw error
+    return data as Notification
+}
+
+// ============================================
+// USER MANAGEMENT UTILITIES
+// ============================================
+
+export async function updateUserPassword(userId: string, newPassword: string) {
+    // This requires service role key - should be done via API route
+    // For now, we'll throw an error to remind to implement via API
+    throw new Error("Password updates must be done via API route for security")
+}
+
+// ============================================
+// EXPORT UTILITIES
+// ============================================
+
+export async function getAspirasiForExport(filters?: {
+    startDate?: string
+    endDate?: string
+    category?: AspirasiCategory
+    status?: AspirasiStatus
+}) {
+    let query = supabase
+        .from("aspirasi")
+        .select(`
+            *,
+            submitter:profiles!submitter_id(nama, nis, email, kelas)
+        `)
+        .order("created_at", { ascending: false })
+
+    if (filters?.startDate) {
+        query = query.gte("created_at", filters.startDate)
+    }
+    if (filters?.endDate) {
+        query = query.lte("created_at", filters.endDate)
+    }
+    if (filters?.category) {
+        query = query.eq("category", filters.category)
+    }
+    if (filters?.status) {
+        query = query.eq("status", filters.status)
+    }
+
+    const { data, error } = await query
+    if (error) throw error
+    return data as Aspirasi[]
+}
+
 export async function getWeeklyActivityStats(days = 7) {
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days + 1) // +1 to include today and go back 6 days
@@ -506,3 +655,5 @@ export async function getWeeklyActivityStats(days = 7) {
 
     return result
 }
+
+

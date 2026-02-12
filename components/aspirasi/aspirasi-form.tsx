@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Send, AlertCircle, CheckCircle } from "lucide-react"
-import { submitAspirasi } from "@/lib/supabase/queries"
+import { Send, AlertCircle, CheckCircle, Image as ImageIcon, X } from "lucide-react"
+import { submitAspirasi, uploadAspirasiImage } from "@/lib/supabase/queries"
 import type { AspirasiCategory } from "@/lib/supabase/queries"
 
 interface AspirasiFormProps {
@@ -28,6 +28,41 @@ export function AspirasiForm({ userId, onSuccess }: AspirasiFormProps) {
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const [location, setLocation] = useState("")
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setError("File harus berupa gambar (JPG, PNG, dll)")
+      return
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Ukuran gambar maksimal 5MB")
+      return
+    }
+
+    setImageFile(file)
+    
+    // Create preview
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string)
+    }
+    reader.readAsDataURL(file)
+    setError("")
+  }
+
+  function removeImage() {
+    setImageFile(null)
+    setImagePreview(null)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -42,12 +77,29 @@ export function AspirasiForm({ userId, onSuccess }: AspirasiFormProps) {
     setSubmitting(true)
 
     try {
+      let imageUrl: string | undefined = undefined
+
+      // Upload image if selected
+      if (imageFile) {
+        setUploadingImage(true)
+        try {
+          imageUrl = await uploadAspirasiImage(imageFile)
+        } catch (err: any) {
+          setError(`Gagal mengupload gambar: ${err.message}`)
+          setSubmitting(false)
+          setUploadingImage(false)
+          return
+        }
+        setUploadingImage(false)
+      }
+
       await submitAspirasi({
         submitter_id: userId,
         category,
         title: title.trim(),
         content: content.trim(),
         location: location.trim() || undefined,
+        image_url: imageUrl,
       })
 
       setSuccess(true)
@@ -55,6 +107,8 @@ export function AspirasiForm({ userId, onSuccess }: AspirasiFormProps) {
       setContent("")
       setLocation("")
       setCategory("fasilitas")
+      setImageFile(null)
+      setImagePreview(null)
 
       if (onSuccess) {
         onSuccess()
@@ -146,9 +200,56 @@ export function AspirasiForm({ userId, onSuccess }: AspirasiFormProps) {
               <p className="text-xs text-muted-foreground mt-1">{content.length} karakter</p>
             </Field>
 
+            <Field>
+              <FieldLabel>Gambar (Opsional)</FieldLabel>
+              <div className="space-y-2">
+                {imagePreview ? (
+                  <div className="relative inline-block">
+                    <img 
+                      src={imagePreview} 
+                      alt="Preview" 
+                      className="max-w-full h-auto max-h-64 rounded-md border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2"
+                      onClick={removeImage}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                    >
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      Pilih Gambar
+                    </Button>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Format: JPG, PNG. Maksimal 5MB.
+                </p>
+              </div>
+            </Field>
+
             <div className="flex gap-3 pt-2">
-              <Button type="submit" disabled={submitting} className="flex-1">
-                {submitting ? (
+              <Button type="submit" disabled={submitting || uploadingImage} className="flex-1">
+                {uploadingImage ? (
+                  "Mengupload gambar..."
+                ) : submitting ? (
                   "Mengirim..."
                 ) : (
                   <>
@@ -161,7 +262,7 @@ export function AspirasiForm({ userId, onSuccess }: AspirasiFormProps) {
                 type="button"
                 variant="outline"
                 onClick={() => router.push("/murid/dashboard")}
-                disabled={submitting}
+                disabled={submitting || uploadingImage}
               >
                 Batal
               </Button>

@@ -60,6 +60,7 @@ CREATE TABLE aspirasi (
   title VARCHAR(255) NOT NULL,
   content TEXT NOT NULL,
   location VARCHAR(255),
+  image_url TEXT,
   status aspirasi_status NOT NULL DEFAULT 'pending',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -144,6 +145,15 @@ CREATE POLICY "Users can update own profile"
   ON profiles FOR UPDATE
   USING (auth.uid() = id);
 
+CREATE POLICY "Master can update any profile"
+  ON profiles FOR UPDATE
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND role = 'master'
+    )
+  );
+
 -- Aspirasi policies
 CREATE POLICY "Anyone can view aspirasi"
   ON aspirasi FOR SELECT
@@ -170,6 +180,47 @@ CREATE POLICY "Anyone can view feedback"
 
 CREATE POLICY "Admins can create feedback"
   ON feedback FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE profiles.id = auth.uid()
+      AND profiles.role IN ('admin', 'master')
+    )
+  );
+
+-- ============================================
+-- NOTIFICATIONS TABLE
+-- ============================================
+
+-- Notifications table
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  type VARCHAR(50) NOT NULL,
+  read BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Notifications indexes
+CREATE INDEX idx_notifications_user ON notifications(user_id);
+CREATE INDEX idx_notifications_read ON notifications(read);
+CREATE INDEX idx_notifications_created ON notifications(created_at DESC);
+
+-- Notifications RLS
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own notifications"
+  ON notifications FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own notifications"
+  ON notifications FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Admins can create notifications"
+  ON notifications FOR INSERT
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM profiles

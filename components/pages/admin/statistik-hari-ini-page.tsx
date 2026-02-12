@@ -21,7 +21,7 @@ export async function StatistikHariIniPageContent() {
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.aspirasiCreatedToday}</div>
+            <div className="teewwwxt-2xl font-bold">{stats.aspirasiCreatedToday}</div>
             <p className="text-xs text-muted-foreground">Hari ini</p>
           </CardContent>
         </Card>

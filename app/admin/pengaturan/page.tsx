@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -13,9 +14,84 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
-import { Globe, Lock, Mail, Settings } from "lucide-react"
+import { Globe, Lock, Mail, Settings, AlertCircle, CheckCircle } from "lucide-react"
+import { supabase } from "@/lib/supabase/client"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function PengaturanAdminPage() {
+  const [userEmail, setUserEmail] = useState("")
+  const [oldPassword, setOldPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.email) setUserEmail(user.email)
+    }
+    getUser()
+  }, [])
+
+  async function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault()
+    setMessage(null)
+    setLoading(true)
+
+    if (!userEmail) {
+      setMessage({ type: "error", text: "Email tidak ditemukan. Mohon refresh halaman atau login ulang." })
+      setLoading(false)
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setMessage({ type: "error", text: "Konfirmasi kata sandi tidak cocok" })
+      setLoading(false)
+      return
+    }
+
+    if (newPassword.length < 6) {
+      setMessage({ type: "error", text: "Kata sandi baru minimal 6 karakter" })
+      setLoading(false)
+      return
+    }
+
+    try {
+      // 1. Verify old password by attempting sign in
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: userEmail,
+        password: oldPassword,
+      })
+
+      if (signInError) {
+        throw new Error("Kata sandi lama salah atau terjadi kesalahan autentikasi.")
+      }
+
+      // 2. Update to new password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      })
+
+      if (updateError) throw updateError
+
+      setMessage({ type: "success", text: "Kata sandi berhasil diperbarui." })
+      setOldPassword("")
+      setNewPassword("")
+      setConfirmPassword("")
+    } catch (err: any) {
+      console.error("Password change error:", err)
+      setMessage({ type: "error", text: err.message || "Gagal mengubah kata sandi." })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!mounted) return null
+
   return (
     <div className="container mx-auto max-w-4xl py-8 space-y-8">
       <div className="space-y-2">
@@ -72,25 +148,56 @@ export default function PengaturanAdminPage() {
               Ubah kata sandi akun admin.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="current-pass">Kata Sandi Lama</Label>
-              <Input id="current-pass" type="password" />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handlePasswordChange}>
+            <CardContent className="space-y-4">
+              {message && (
+                <Alert variant={message.type === "error" ? "destructive" : "default"} className={message.type === "success" ? "border-green-500 text-green-700 bg-green-50" : ""}>
+                  {message.type === "success" ? <CheckCircle className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+                  <AlertDescription>{message.text}</AlertDescription>
+                </Alert>
+              )}
+              
               <div className="space-y-2">
-                <Label htmlFor="new-pass">Kata Sandi Baru</Label>
-                <Input id="new-pass" type="password" />
+                <Label htmlFor="current-pass">Kata Sandi Lama</Label>
+                <Input 
+                  id="current-pass" 
+                  type="password" 
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  required
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-pass">Konfirmasi Kata Sandi</Label>
-                <Input id="confirm-pass" type="password" />
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-pass">Kata Sandi Baru</Label>
+                  <Input 
+                    id="new-pass" 
+                    type="password" 
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-pass">Konfirmasi Kata Sandi</Label>
+                  <Input 
+                    id="confirm-pass" 
+                    type="password" 
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
               </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button variant="outline">Update Password</Button>
-          </CardFooter>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Menyimpan..." : "Update Password"}
+              </Button>
+            </CardFooter>
+          </form>
         </Card>
       </div>
     </div>
