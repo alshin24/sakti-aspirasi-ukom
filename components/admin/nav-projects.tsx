@@ -80,12 +80,12 @@ export function NavProjects({
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>
-          <SidebarMenuButton asChild>
+          {/* <SidebarMenuButton asChild>
             <Link href="/admin/more">
               <MoreHorizontal />
               <span>More</span>
             </Link>
-          </SidebarMenuButton>
+          </SidebarMenuButton> */}
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarGroup>
