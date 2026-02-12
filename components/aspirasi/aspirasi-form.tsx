@@ -261,7 +261,7 @@ export function AspirasiForm({ userId, onSuccess }: AspirasiFormProps) {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/murid/dashboard")}
+                onClick={() => router.push("/murid")}
                 disabled={submitting || uploadingImage}
               >
                 Batal

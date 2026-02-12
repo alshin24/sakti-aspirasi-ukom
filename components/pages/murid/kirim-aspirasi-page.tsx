@@ -88,7 +88,7 @@ export function KirimAspirasiPage() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/murid/dashboard">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/murid">Dashboard</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>

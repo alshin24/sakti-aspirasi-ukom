@@ -72,7 +72,7 @@ export function DaftarAdminPage() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/master/dashboard">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/master">Dashboard</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>

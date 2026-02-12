@@ -124,7 +124,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => router.push("/murid/dashboard")}
+                onClick={() => router.push("/murid")}
                 disabled={saving}
               >
                 Batal

@@ -112,7 +112,7 @@ export function AdminAspirasiDetailPage({ id }: AdminAspirasiDetailPageProps) {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="/admin/dashboard">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink href="/admin">Dashboard</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>

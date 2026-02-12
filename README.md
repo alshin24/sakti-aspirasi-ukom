@@ -71,7 +71,7 @@ Same as Admin, but update `role` to `'master'`
    - Default role should be `murid`
 
 2. **Login** as murid
-   - Should redirect to `/murid/dashboard`
+   - Should redirect to `/murid`
    - Stats should show zeros (no aspirasi yet)
    - Charts should show empty state
 
@@ -82,13 +82,13 @@ Same as Admin, but update `role` to `'master'`
    - Submit → status should be `pending`
 
 4. **Login as admin**:
-   - Should redirect to `/admin/dashboard`
+   - Should redirect to `/admin`
    - See all aspirasi from all users
    - Approve or reject aspirasi
    - Add feedback
 
 5. **Login as master**:
-   - Should redirect to `/master/dashboard`
+   - Should redirect to `/master`
    - See system-wide stats
    - Manage admins (promote/demote)
 
